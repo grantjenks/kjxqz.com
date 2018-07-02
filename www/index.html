@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>kjxqz.com</title>
+  <meta name="description" content="Word game word solver.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <style>
+   html {
+       font-family: monospace;
+       font-size: 24px;
+       letter-spacing: 0.03125em;
+       overflow-y: scroll;
+   }
+   .content {
+       margin: 0 auto;
+       max-width: 480px;
+   }
+   h1 {
+       font-size: 0.75em;
+       text-align: center;
+   }
+   input[name="letters"] {
+       border: 0.09375em solid black;
+       border-radius: 0;
+       box-sizing: border-box;
+       font-family: inherit;
+       font-size: inherit;
+       font-weight: bold;
+       letter-spacing: 0.125em;
+       padding: 0.25em;
+       width: 100%;
+   }
+   input:focus {
+       outline: none;
+   }
+   p {
+       margin: 0.5em;
+   }
+   .word {
+       font-size: 0.75em;
+       margin: 0.125em;
+   }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>kjxqz.com</h1>
+    <div class="wrapper">
+      <input type="text" name="letters" oninput="update()" autocorrect="off"
+             autocapitalize="none">
+    </div>
+    <div id="output""></div>
+  </div>
+  <script src="/dawg.js"></script>
+  <script>
+    function update() {
+        var output = document.getElementById("output");
+        var letters_input = document.getElementsByName("letters")[0];
+        var letters = letters_input.value;
+        if (letters.length < 2 || letters.length > 12) {
+            output.innerHTML = "";
+            return;
+        }
+        var words = matches(letters);
+        var parts = [];
+        var last = -1;
+        for (word of words) {
+            if (word.length != last) {
+                parts.push("</p>");
+                parts.push("<p>");
+                last = word.length;
+            }
+            parts.push('<span class="word">' + word + "</span>");
+        }
+        parts.shift();
+        parts.pop();
+        output.innerHTML = parts.join('\n');
+    }
+    function matches(letters) {
+        var results = [];
+        var letters = Array.from(letters);
+        var value = [];
+
+        function helper(state) {
+            var branch = dawg[state];
+
+            if ('$' in branch) {
+                var result = value.join('');
+                results.push(result);
+            }
+
+            for (var index = 0; index < letters.length; index += 1) {
+                var letter = letters.pop();
+                var options = [letter];
+
+                for (option of options) {
+                    if (option in branch) {
+                        value.push(option);
+                        state = branch[option];
+                        helper(state);
+                        value.pop();
+                    }
+                }
+                letters.splice(0, 0, letter);
+            }
+        }
+
+        helper('0');
+
+        results.sort(function(alpha, beta) {
+            return (beta.length - alpha.length
+                || alpha.localeCompare(beta));
+        });
+
+        return results.filter(function (element, index, results) {
+            return index == 0 || results[index - 1] != element;
+        });
+    }
+  </script>
+</body>
+</html>
