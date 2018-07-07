@@ -74,8 +74,8 @@
             }
             parts.push('<span class="word">' + word + "</span>");
         }
+        parts.push("</p>");
         parts.shift();
-        parts.pop();
         output.innerHTML = parts.join('\n');
     }
     function matches(letters) {
