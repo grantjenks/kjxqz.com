@@ -21,7 +21,7 @@
        font-size: 0.75em;
        text-align: center;
    }
-   input[name="letters"] {
+   input[name="query"] {
        border: 0.09375em solid black;
        border-radius: 0;
        box-sizing: border-box;
@@ -48,40 +48,73 @@
   <div class="content">
     <h1>kjxqz.com</h1>
     <div class="wrapper">
-      <input type="text" name="letters" oninput="update()" autocorrect="off"
-             autocapitalize="none">
+      <input id="query" name="query" type="text" oninput="update()"
+             autocorrect="off" autocapitalize="none">
     </div>
-    <div id="output""></div>
+    <div id="output"></div>
   </div>
   <script src="/dawg.js"></script>
   <script>
     function update() {
-        var output = document.getElementById("output");
-        var letters_input = document.getElementsByName("letters")[0];
-        var letters = letters_input.value;
-        if (letters.length < 2 || letters.length > 12) {
-            output.innerHTML = "";
-            return;
+        var options = parse();
+        var results = matches(options);
+        draw(options, results);
+    }
+    function parse() {
+        var options = new Map([['letters', ''], ['contains', '']]);
+        var input_query = document.getElementById('query');
+        var query = input_query.value;
+        var lower_query = query.toLowerCase();
+        var parts = lower_query.split(/\s+/);
+        var letters = parts.shift() || '';
+        letters = /^[a-z?]{1,12}$/.test(letters) ? letters : '';
+        letters = (letters.match(/\?/g) || []).length <= 2 ? letters : '';
+        options.set('letters', letters);
+        var contains = parts.shift() || '';
+        contains = /^[a-z]{1,12}$/.test(contains) ? contains : '';
+        options.set('contains', contains);
+        return options;
+    }
+    function draw(options, results) {
+        var parts = [
+            '<p>',
+            '<span class="word">',
+            'Letters: ' + options.get('letters'),
+            '</span>',
+        ];
+
+        if (options.get('contains').length > 0) {
+            parts.push('<br>');
+            parts.push('<span class="word">');
+            parts.push('Contains: ' + options.get('contains'));
+            parts.push('</span>');
         }
-        var words = matches(letters);
-        var parts = [];
+        parts.push('</p>');
+
         var last = -1;
-        for (word of words) {
+
+        for (var index = 0; index < results.length; index += 1) {
+            var word = results[index];
+
             if (word.length != last) {
-                parts.push("</p>");
-                parts.push("<p>");
+                if (index > 0) {
+                    parts.push('</p>');
+                }
+                parts.push('<p>');
                 last = word.length;
             }
-            parts.push('<span class="word">' + word + "</span>");
+            parts.push('<span class="word">' + word + '</span>');
         }
-        parts.push("</p>");
-        parts.shift();
+        parts.push('</p>');
+
+        var output = document.getElementById('output');
         output.innerHTML = parts.join('\n');
     }
-    function matches(letters) {
-        var results = [];
-        var letters = Array.from(letters);
+    function matches(options) {
         var value = [];
+        var letters = Array.from(options.get('letters'));
+        var alphabet = Array.from('abcdefghijklmnopqrstuvwxyz');
+        var results = [];
 
         function helper(state) {
             var branch = dawg[state];
@@ -93,12 +126,12 @@
 
             for (var index = 0; index < letters.length; index += 1) {
                 var letter = letters.pop();
-                var options = [letter];
+                var choices = letter == '?' ? alphabet : [letter];
 
-                for (option of options) {
-                    if (option in branch) {
-                        value.push(option);
-                        state = branch[option];
+                for (choice of choices) {
+                    if (choice in branch) {
+                        value.push(choice);
+                        state = branch[choice];
                         helper(state);
                         value.pop();
                     }
