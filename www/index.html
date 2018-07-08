@@ -113,34 +113,71 @@
     function matches(options) {
         var value = [];
         var letters = Array.from(options.get('letters'));
+        var contains = Array.from(options.get('contains'));
         var alphabet = Array.from('abcdefghijklmnopqrstuvwxyz');
         var results = [];
 
-        function helper(state) {
-            var branch = dawg[state];
+        function helper(state, contained) {
+            var branches = dawg[state];
 
-            if ('$' in branch) {
-                var result = value.join('');
-                results.push(result);
+            if (contained) {
+                if ('$' in branches) {
+                    var result = value.join('');
+                    results.push(result);
+                }
+                traverse(state, true);
             }
+            else {
+                traverse(state, false);
 
-            for (var index = 0; index < letters.length; index += 1) {
-                var letter = letters.pop();
-                var choices = letter == '?' ? alphabet : [letter];
+                var contains_length = contains.length;
 
-                for (choice of choices) {
-                    if (choice in branch) {
-                        value.push(choice);
-                        state = branch[choice];
-                        helper(state);
-                        value.pop();
+                for (var index = 0; index < contains_length; index += 1) {
+                    var letter = contains[index];
+
+                    if (letter in branches) {
+                        value.push(letter);
+                        state = branches[letter];
+                        branches = dawg[state]
+                    }
+                    else {
+                        for (var count = 0; count < index; count += 1) {
+                            value.pop();
+                        }
+                        return;
                     }
                 }
-                letters.splice(0, 0, letter);
+                helper(state, true);
+                for (var count = 0; count < contains_length; count += 1) {
+                    value.pop();
+                }
             }
         }
 
-        helper('0');
+        function traverse(state, contained) {
+            var branches = dawg[state];
+            var letters_length = letters.length;
+
+            for (var count = 0; count < letters_length; count += 1) {
+                var letter = letters.shift();
+                var choices = letter == '?' ? alphabet : [letter];
+                var choices_length = choices.length;
+
+                for (var index = 0; index < choices_length; index += 1) {
+                    var choice = choices[index];
+
+                    if (choice in branches) {
+                        value.push(choice);
+                        state = branches[choice];
+                        helper(state, contained);
+                        value.pop();
+                    }
+                }
+                letters.push(letter);
+            }
+        }
+
+        helper('0', contains.length == 0);
 
         results.sort(function(alpha, beta) {
             return (beta.length - alpha.length
