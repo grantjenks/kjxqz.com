@@ -1,8 +1,9 @@
 "Tools for creating directed acyclic word graphs."
 
+import io
 from itertools import count, permutations
 from collections import Counter, defaultdict
-import wordsegment
+import os.path as op
 import json
 
 def treedict():
@@ -117,11 +118,21 @@ def make_dawg(words):
     result = minimize(matrix, root)
     return result
 
+WORDS_TXT = op.join(op.dirname(op.realpath(__file__)), 'words.txt')
+
 def make_json(filename='dawg.js'):
-    wordsegment.load()
-    words = sorted(set(wordsegment.WORDS))
+    with io.open(WORDS_TXT, encoding='utf-8') as reader:
+        text = reader.read()
+        words = sorted(set(text.splitlines()))
     data = make_dawg(words)
     with open(filename, 'w') as writer:
         writer.write('var dawg = ')
         json.dump(data, writer, indent=4, sort_keys=True)
         writer.write(';')
+
+__title__ = 'kjxqz'
+__version__ = '0.0.1'
+__build__ = 0x000001
+__author__ = 'Grant Jenks'
+__license__ = 'Apache 2.0'
+__copyright__ = 'Copyright 2018 Grant Jenks'

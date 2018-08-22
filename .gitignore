@@ -1,15 +1,8 @@
-# Python byte-code
-*.py[co]
-
-# Anything under a bin directory
-bin/
-
-# Anything under a virutalenv directory
+*.pyc
 env*/
-
-# Coverage files.
+.eggs/
+.pytest_cache/
+.tox/
+kjxqz.egg-info/
 .coverage
-
-node_modules/
-
 .DS_Store
