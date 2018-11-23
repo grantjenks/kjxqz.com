@@ -1,201 +1,238 @@
 <!doctype html>
 <html lang="en-us">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <title>kjxqz.com</title>
-  <meta name="description" content="Word game word solver.">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <style>
-   html {
-       font-family: monospace;
-       font-size: 24px;
-       letter-spacing: 0.03125em;
-       overflow-y: scroll;
-   }
-   .content {
-       margin: 0 auto;
-       max-width: 480px;
-   }
-   h1 {
-       font-size: 0.75em;
-       text-align: center;
-   }
-   input[name="query"] {
-       border: 0.09375em solid black;
-       border-radius: 0;
-       box-sizing: border-box;
-       font-family: inherit;
-       font-size: inherit;
-       font-weight: bold;
-       letter-spacing: 0.125em;
-       padding: 0.25em;
-       width: 100%;
-   }
-   input:focus {
-       outline: none;
-   }
-   p {
-       margin: 0.5em;
-   }
-   .word {
-       font-size: 0.75em;
-       margin: 0.125em;
-   }
-  </style>
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-19364636-6"></script>
-  <script>
-   window.dataLayer = window.dataLayer || [];
-   function gtag(){dataLayer.push(arguments);}
-   gtag('js', new Date());
-   gtag('config', 'UA-19364636-6');
-  </script>
-</head>
-<body>
-  <div class="content">
-    <h1>kjxqz.com</h1>
-    <div class="wrapper">
-      <input id="query" name="query" type="text" oninput="update()"
-             autocorrect="off" autocapitalize="none">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>kjxqz.com</title>
+    <meta name="description" content="Word game word solver.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <style>
+     html {
+         font-family: monospace;
+         font-size: 24px;
+         letter-spacing: 0.03125em;
+         overflow-y: scroll;
+     }
+     .content {
+         margin: 0 auto;
+         max-width: 480px;
+     }
+     h1 {
+         font-size: 0.75em;
+         text-align: center;
+     }
+     input[name="query"] {
+         border: 0.09375em solid black;
+         border-radius: 0;
+         box-sizing: border-box;
+         font-family: inherit;
+         font-size: inherit;
+         font-weight: bold;
+         letter-spacing: 0.125em;
+         padding: 0.25em;
+         width: 100%;
+     }
+     input:focus {
+         outline: none;
+     }
+     p {
+         margin: 0.5em;
+     }
+     .word {
+         font-size: 0.75em;
+         margin: 0.125em;
+     }
+    </style>
+    <script>
+     if ('serviceWorker' in navigator) {
+         function listenForWaiting(registration, callback) {
+             function waitForInstalled() {
+                 registration.installing.addEventListener(
+                     'statechange', function() {
+                         if (this.state === 'installed') {
+                             callback(registration);
+                         }
+                     }
+                 );
+             }
+             if (!registration) {
+                 return;
+             }
+             else if (registration.waiting) {
+                 return callback(registration);
+             }
+             else if (registration.installing) {
+                 waitForInstalled();
+             }
+             registration.addEventListener('updatefound', waitForInstalled);
+         }
+         function promptForReload(registration) {
+             if (window.confirm("New version available! OK to reload?")) {
+                 registration.waiting.postMessage('skipWaiting');
+                 setTimeout(function () {
+                     window.location.reload();
+                 }, 500);
+             }
+         }
+         var register = navigator.serviceWorker.register('service-worker.js');
+         register.then(function (registration) {
+             listenForWaiting(registration, promptForReload);
+         });
+     }
+    </script>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-19364636-6"></script>
+    <script>
+     window.dataLayer = window.dataLayer || [];
+     function gtag(){dataLayer.push(arguments);}
+     gtag('js', new Date());
+     gtag('config', 'UA-19364636-6');
+    </script>
+  </head>
+  <body>
+    <div class="content">
+      <h1>kjxqz.com</h1>
+      <div class="wrapper">
+        <input id="query" name="query" type="text" oninput="update()"
+               autocorrect="off" autocapitalize="none">
+      </div>
+      <div id="output"></div>
     </div>
-    <div id="output"></div>
-  </div>
-  <script src="/dawg.js"></script>
-  <script>
-    function update() {
-        var options = parse();
-        var results = matches(options);
-        draw(options, results);
-    }
-    function parse() {
-        var options = new Map([['letters', ''], ['contains', '']]);
-        var input_query = document.getElementById('query');
-        var query = input_query.value;
-        var lower_query = query.toLowerCase();
-        var parts = lower_query.split(/\s+/);
-        var letters = parts.shift() || '';
-        letters = /^[a-z?]{1,12}$/.test(letters) ? letters : '';
-        letters = (letters.match(/\?/g) || []).length <= 2 ? letters : '';
-        options.set('letters', letters);
-        var contains = parts.shift() || '';
-        contains = /^[a-z]{1,12}$/.test(contains) ? contains : '';
-        options.set('contains', contains);
-        return options;
-    }
-    function draw(options, results) {
-        var parts = [
-            '<p>',
-            '<span class="word">',
-            'Letters: ' + options.get('letters'),
-            '</span>',
-        ];
+    <script src="/dawg.js"></script>
+    <script>
+     function update() {
+         var options = parse();
+         var results = matches(options);
+         draw(options, results);
+     }
+     function parse() {
+         var options = new Map([['letters', ''], ['contains', '']]);
+         var input_query = document.getElementById('query');
+         var query = input_query.value;
+         var lower_query = query.toLowerCase();
+         var parts = lower_query.split(/\s+/);
+         var letters = parts.shift() || '';
+         letters = /^[a-z?]{1,12}$/.test(letters) ? letters : '';
+         letters = (letters.match(/\?/g) || []).length <= 2 ? letters : '';
+         options.set('letters', letters);
+         var contains = parts.shift() || '';
+         contains = /^[a-z]{1,12}$/.test(contains) ? contains : '';
+         options.set('contains', contains);
+         return options;
+     }
+     function draw(options, results) {
+         var parts = [
+             '<p>',
+             '<span class="word">',
+             'Letters: ' + options.get('letters'),
+             '</span>',
+         ];
 
-        if (options.get('contains').length > 0) {
-            parts.push('<br>');
-            parts.push('<span class="word">');
-            parts.push('Contains: ' + options.get('contains'));
-            parts.push('</span>');
-        }
-        parts.push('</p>');
+         if (options.get('contains').length > 0) {
+             parts.push('<br>');
+             parts.push('<span class="word">');
+             parts.push('Contains: ' + options.get('contains'));
+             parts.push('</span>');
+         }
+         parts.push('</p>');
 
-        var last = -1;
+         var last = -1;
 
-        for (var index = 0; index < results.length; index += 1) {
-            var word = results[index];
+         for (var index = 0; index < results.length; index += 1) {
+             var word = results[index];
 
-            if (word.length != last) {
-                if (index > 0) {
-                    parts.push('</p>');
-                }
-                parts.push('<p>');
-                last = word.length;
-            }
-            parts.push('<span class="word">' + word + '</span>');
-        }
-        parts.push('</p>');
+             if (word.length != last) {
+                 if (index > 0) {
+                     parts.push('</p>');
+                 }
+                 parts.push('<p>');
+                 last = word.length;
+             }
+             parts.push('<span class="word">' + word + '</span>');
+         }
+         parts.push('</p>');
 
-        var output = document.getElementById('output');
-        output.innerHTML = parts.join('\n');
-    }
-    function matches(options) {
-        var value = [];
-        var letters = Array.from(options.get('letters'));
-        var contains = Array.from(options.get('contains'));
-        var alphabet = Array.from('abcdefghijklmnopqrstuvwxyz');
-        var results = [];
+         var output = document.getElementById('output');
+         output.innerHTML = parts.join('\n');
+     }
+     function matches(options) {
+         var value = [];
+         var letters = Array.from(options.get('letters'));
+         var contains = Array.from(options.get('contains'));
+         var alphabet = Array.from('abcdefghijklmnopqrstuvwxyz');
+         var results = [];
 
-        function helper(state, contained) {
-            var branches = dawg[state];
+         function helper(state, contained) {
+             var branches = dawg[state];
 
-            if (contained) {
-                if ('$' in branches) {
-                    var result = value.join('');
-                    results.push(result);
-                }
-                traverse(state, true);
-            }
-            else {
-                traverse(state, false);
+             if (contained) {
+                 if ('$' in branches) {
+                     var result = value.join('');
+                     results.push(result);
+                 }
+                 traverse(state, true);
+             }
+             else {
+                 traverse(state, false);
 
-                var contains_length = contains.length;
+                 var contains_length = contains.length;
 
-                for (var index = 0; index < contains_length; index += 1) {
-                    var letter = contains[index];
+                 for (var index = 0; index < contains_length; index += 1) {
+                     var letter = contains[index];
 
-                    if (letter in branches) {
-                        value.push(letter);
-                        state = branches[letter];
-                        branches = dawg[state]
-                    }
-                    else {
-                        for (var count = 0; count < index; count += 1) {
-                            value.pop();
-                        }
-                        return;
-                    }
-                }
-                helper(state, true);
-                for (var count = 0; count < contains_length; count += 1) {
-                    value.pop();
-                }
-            }
-        }
+                     if (letter in branches) {
+                         value.push(letter);
+                         state = branches[letter];
+                         branches = dawg[state]
+                     }
+                     else {
+                         for (var count = 0; count < index; count += 1) {
+                             value.pop();
+                         }
+                         return;
+                     }
+                 }
+                 helper(state, true);
+                 for (var count = 0; count < contains_length; count += 1) {
+                     value.pop();
+                 }
+             }
+         }
 
-        function traverse(state, contained) {
-            var branches = dawg[state];
-            var letters_length = letters.length;
+         function traverse(state, contained) {
+             var branches = dawg[state];
+             var letters_length = letters.length;
 
-            for (var count = 0; count < letters_length; count += 1) {
-                var letter = letters.shift();
-                var choices = letter == '?' ? alphabet : [letter];
-                var choices_length = choices.length;
+             for (var count = 0; count < letters_length; count += 1) {
+                 var letter = letters.shift();
+                 var choices = letter == '?' ? alphabet : [letter];
+                 var choices_length = choices.length;
 
-                for (var index = 0; index < choices_length; index += 1) {
-                    var choice = choices[index];
+                 for (var index = 0; index < choices_length; index += 1) {
+                     var choice = choices[index];
 
-                    if (choice in branches) {
-                        value.push(choice);
-                        state = branches[choice];
-                        helper(state, contained);
-                        value.pop();
-                    }
-                }
-                letters.push(letter);
-            }
-        }
+                     if (choice in branches) {
+                         value.push(choice);
+                         state = branches[choice];
+                         helper(state, contained);
+                         value.pop();
+                     }
+                 }
+                 letters.push(letter);
+             }
+         }
 
-        helper('0', contains.length == 0);
+         helper('0', contains.length == 0);
 
-        results.sort(function(alpha, beta) {
-            return (beta.length - alpha.length
-                || alpha.localeCompare(beta));
-        });
+         results.sort(function(alpha, beta) {
+             return (beta.length - alpha.length
+                  || alpha.localeCompare(beta));
+         });
 
-        return results.filter(function (element, index, results) {
-            return index == 0 || results[index - 1] != element;
-        });
-    }
-  </script>
-</body>
+         return results.filter(function (element, index, results) {
+             return index == 0 || results[index - 1] != element;
+         });
+     }
+    </script>
+  </body>
 </html>
