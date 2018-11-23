@@ -1,9 +1,24 @@
-import io
-from setuptools import setup
+from setuptools import Command, setup
 from setuptools.command.test import test as TestCommand
-import sys
 
 import kjxqz
+
+
+class Deploy(Command):
+    description = 'copy website files to host'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        for filename in ['index.html', 'dawg.js']:
+            local_fn = f'www/{filename}'
+            remote_fn = f'magnesium:/srv/www/www.kjxqz.com/{filename}'
+            self.spawn(['scp', local_fn, remote_fn])
 
 
 class Tox(TestCommand):
@@ -11,15 +26,15 @@ class Tox(TestCommand):
         TestCommand.finalize_options(self)
         self.test_args = []
         self.test_suite = True
+
     def run_tests(self):
         import tox
         errno = tox.cmdline(self.test_args)
-        sys.exit(errno)
+        exit(errno)
 
 
-with io.open('README.rst', encoding='UTF-8') as reader:
+with open('README.rst') as reader:
     readme = reader.read()
-
 
 setup(
     name='kjxqz',
@@ -32,7 +47,7 @@ setup(
     packages=['kjxqz'],
     include_package_data=True,
     tests_require=['tox'],
-    cmdclass={'test': Tox},
+    cmdclass={'deploy': Deploy, 'test': Tox},
     license='Apache 2.0',
     classifiers=[
         'Development Status :: 4 - Beta',
