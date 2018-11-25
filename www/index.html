@@ -42,6 +42,16 @@
          font-size: 0.75em;
          margin: 0.125em;
      }
+     a.word:link {
+         text-decoration: inherit;
+         color: inherit;
+         cursor: auto;
+     }
+     a.word:visited {
+         text-decoration: inherit;
+         color: inherit;
+         cursor: auto;
+     }
     </style>
     <script>
      if ('serviceWorker' in navigator) {
@@ -184,7 +194,10 @@
                  parts.push('<p>');
                  last = word.length;
              }
-             parts.push('<span class="word">' + word + '</span>');
+             var link = 'https://www.google.com/search?q=';
+             link += encodeURIComponent('define:' + word);
+             parts.push('<a class="word" href="' + link + '" target="_blank">'
+                        + word + '</a>');
          }
          parts.push('</p>');
 
