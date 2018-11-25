@@ -1,4 +1,4 @@
-CACHE_HASH = 'kjxqz-1543015824'
+CACHE_HASH = 'kjxqz-1543184507'
 
 self.addEventListener('install', function(event) {
     event.waitUntil(
