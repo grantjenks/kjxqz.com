@@ -135,6 +135,8 @@
     <script src="/dawg.js"></script>
     <script>
      function update() {
+         var query_value = document.getElementById('query').value;
+         gtag('event', 'view_search_results', {'search_term': query_value});
          var options = parse();
          var results = matches(options);
          draw(options, results);
