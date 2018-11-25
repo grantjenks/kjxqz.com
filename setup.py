@@ -15,7 +15,13 @@ class Deploy(Command):
         pass
 
     def run(self):
-        for filename in ['index.html', 'dawg.js']:
+        filenames = [
+            'index.html',
+            'dawg.js',
+            'service-worker.js',
+            'nginx.conf',
+        ]
+        for filename in filenames:
             local_fn = f'www/{filename}'
             remote_fn = f'magnesium:/srv/www/www.kjxqz.com/{filename}'
             self.spawn(['scp', local_fn, remote_fn])
