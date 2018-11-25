@@ -24,6 +24,7 @@ class Deploy(Command):
         remote = 'magnesium:/srv/www/www.kjxqz.com/'
         for filename in filenames:
             self.spawn(['scp', filename, remote + filename])
+        self.spawn(['ssh', 'magnesium', 'sudo', 'nginx', '-s', 'reload'])
 
 
 class Tox(TestCommand):
