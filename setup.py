@@ -16,15 +16,14 @@ class Deploy(Command):
 
     def run(self):
         filenames = [
-            'index.html',
-            'dawg.js',
-            'service-worker.js',
+            'www/index.html',
+            'www/dawg.js',
+            'www/service-worker.js',
             'nginx.conf',
         ]
+        remote = 'magnesium:/srv/www/www.kjxqz.com/'
         for filename in filenames:
-            local_fn = f'www/{filename}'
-            remote_fn = f'magnesium:/srv/www/www.kjxqz.com/{filename}'
-            self.spawn(['scp', local_fn, remote_fn])
+            self.spawn(['scp', filename, remote + filename])
 
 
 class Tox(TestCommand):
