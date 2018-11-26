@@ -138,7 +138,8 @@
       <h1>kjxqz.com</h1>
       <div class="wrapper">
         <input id="query" name="query" type="text" oninput="update()"
-               autocorrect="off" autocapitalize="none">
+               autocorrect="off" autocapitalize="none"
+               placeholder="letters">
       </div>
       <div id="output"></div>
     </div>
@@ -282,6 +283,7 @@
              return index == 0 || results[index - 1] != element;
          });
      }
+     document.getElementById('query').focus();
     </script>
   </body>
 </html>
