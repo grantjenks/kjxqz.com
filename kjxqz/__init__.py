@@ -1,5 +1,6 @@
 "Tools for creating directed acyclic word graphs."
 
+import hashlib
 import io
 from itertools import count, permutations
 from collections import Counter, defaultdict
@@ -118,7 +119,15 @@ def make_dawg(words):
     result = minimize(matrix, root)
     return result
 
-WORDS_TXT = op.join(op.dirname(op.realpath(__file__)), 'words.txt')
+DIR_PATH = op.dirname(op.realpath(__file__))
+WORDS_TXT = op.join(DIR_PATH, 'words.txt')
+INDEX_HTML = op.join(DIR_PATH, 'index.html')
+SERVICE_WORKER_JS = op.join(DIR_PATH, 'service-worker.js')
+
+def make_index(filename='index.html'):
+    with open(INDEX_HTML, 'rb') as reader:
+        with open(filename, 'wb') as writer:
+            writer.write(reader.read())
 
 def make_json(filename='dawg.js'):
     with io.open(WORDS_TXT, encoding='utf-8') as reader:
@@ -128,7 +137,23 @@ def make_json(filename='dawg.js'):
     with open(filename, 'w') as writer:
         writer.write('var dawg = ')
         json.dump(data, writer, indent=4, sort_keys=True)
-        writer.write(';')
+        writer.write(';\n')
+
+def make_service_worker(filename='service-worker.js'):
+    sha2 = hashlib.sha256()
+    for path in [INDEX_HTML, SERVICE_WORKER_JS, WORDS_TXT]:
+        with open(path, 'rb') as reader:
+            while True:
+                chunk = reader.read(2 ** 16)
+                if not chunk:
+                    break
+                sha2.update(chunk)
+    code = sha2.hexdigest()[:16]
+    with open(SERVICE_WORKER_JS) as reader:
+        text = reader.read()
+        text = text.replace('{HASH}', code)
+    with open(filename, 'w') as writer:
+        writer.write(text)
 
 __title__ = 'kjxqz'
 __version__ = '0.0.1'
