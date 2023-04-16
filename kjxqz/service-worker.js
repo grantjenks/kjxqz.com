@@ -1,8 +1,7 @@
 const CACHE_NAME = 'kjxqz-{HASH}';
-const urlsToCache = [
+const assetsToCache = [
     '/',
     '/styles.css',
-    '/service-worker-handler.js',
     '/dawg.js',
     '/main.js',
 ];
@@ -10,7 +9,7 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache);
+            return cache.addAll(assetsToCache);
         })
     );
 });
@@ -18,17 +17,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         caches.match(event.request).then((response) => {
-            if (response) {
-                return response;
-            }
-            return fetch(event.request);
+            return response || fetch(event.request);
         })
     );
 });
 
 self.addEventListener('activate', (event) => {
     const cacheWhitelist = [CACHE_NAME];
-
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
