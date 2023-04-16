@@ -1,0 +1,45 @@
+html {
+    font-family: monospace;
+    font-size: 24px;
+    letter-spacing: 0.03125em;
+    overflow-y: scroll;
+}
+.content {
+    margin: 0 auto;
+    max-width: 480px;
+}
+h1 {
+    font-size: 0.75em;
+    text-align: center;
+}
+input[name="query"] {
+    border: 0.09375em solid black;
+    border-radius: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: bold;
+    letter-spacing: 0.125em;
+    padding: 0.25em;
+    width: 100%;
+}
+input:focus {
+    outline: none;
+}
+p {
+    margin: 0.5em;
+}
+.word {
+    font-size: 0.75em;
+    margin: 0.125em;
+}
+a.word:link {
+    text-decoration: inherit;
+    color: inherit;
+    cursor: auto;
+}
+a.word:visited {
+    text-decoration: inherit;
+    color: inherit;
+    cursor: auto;
+}

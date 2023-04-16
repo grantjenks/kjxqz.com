@@ -1,48 +1,43 @@
-CACHE_HASH = 'kjxqz-{HASH}'
+const CACHE_NAME = 'kjxqz-{HASH}';
+const urlsToCache = [
+    '/',
+    '/styles.css',
+    '/service-worker-handler.js',
+    '/dawg.js',
+    '/main.js',
+];
 
-self.addEventListener('install', function(event) {
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_HASH).then(function(cache) {
-            return cache.addAll([
-                '/',
-                '/index.html',
-                '/dawg.js',
-            ]);
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(urlsToCache);
         })
     );
 });
 
-self.addEventListener('message', function(event) {
-    if (event.data == 'skipWaiting') {
-        self.skipWaiting();
-    }
-});
-
-self.addEventListener('activate', function(event) {
-    event.waitUntil(
-        caches.keys().then(function (keys) {
-            return Promise.all(keys.map(function (key) {
-                if (key !== CACHE_HASH) {
-                    return caches.delete(key);
-                }
-            }));
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        caches.match(event.request).then((response) => {
+            if (response) {
+                return response;
+            }
+            return fetch(event.request);
         })
     );
 });
 
-self.addEventListener('fetch', function(event) {
-    if (event.request.url.startsWith(self.location.origin)) {
-        event.respondWith(
-            caches.open(CACHE_HASH).then(function(cache) {
-                return cache.match(event.request).then(function (response) {
-                    return response || fetch(event.request).then(
-                        function(response) {
-                            cache.put(event.request, response.clone());
-                            return response;
-                        }
-                    );
-                });
-            })
-        );
-    }
+self.addEventListener('activate', (event) => {
+    const cacheWhitelist = [CACHE_NAME];
+
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cacheName) => {
+                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        })
+    );
 });
