@@ -25,8 +25,8 @@ if ('serviceWorker' in navigator) {
         // Service Worker, asking it to skipWaiting(), which will fire the
         // controllerchange event, which is configured to reload the page.
 
-        function promptForReload() {
-            if (window.confirm('New version available! OK to reload?')) {
+        function promptForReload(where) {
+            if (window.confirm('New version available! OK to reload?' + where)) {
                 swr.waiting.postMessage('skipWaiting');
             }
         }
@@ -36,12 +36,12 @@ if ('serviceWorker' in navigator) {
 
         function waitForInstalled() {
             if (swr.waiting) {
-                return promptForReload();
+                return promptForReload(' a');
             }
 
             swr.installing.addEventListener('statechange', function() {
                 if (this.state === 'installed') {
-                    promptForReload();
+                    promptForReload(' b');
                 }
             });
         }
@@ -59,7 +59,7 @@ if ('serviceWorker' in navigator) {
             return;
         }
         else if (swr.waiting) {
-            return promptForReload();
+            return promptForReload(' c');
         }
         else if (swr.installing) {
             waitForInstalled();
