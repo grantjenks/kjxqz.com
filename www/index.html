@@ -7,14 +7,7 @@
     <meta name="description" content="Word game word solver.">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/styles.css">
-    <script defer src="/service-worker-handler.js"></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-19364636-6"></script>
-    <script>
-     window.dataLayer = window.dataLayer || [];
-     function gtag(){dataLayer.push(arguments);}
-     gtag('js', new Date());
-     gtag('config', 'UA-19364636-6');
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/record/rrweb-record.min.js">
     </script>
     <script src="https://django-rrweb.com/backend/django_rrweb/record/script/">
@@ -32,5 +25,22 @@
     </div>
     <script defer src="/dawg.js"></script>
     <script defer src="/main.js"></script>
+    <script>
+     window.dataLayer = window.dataLayer || [];
+     function gtag(){dataLayer.push(arguments);}
+     gtag('js', new Date());
+     gtag('config', 'UA-19364636-6');
+    </script>
+    <script>
+     if ('serviceWorker' in navigator) {
+         window.addEventListener('load', () => {
+             navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+                 console.log('Service Worker registered with scope:', registration.scope);
+             }, (err) => {
+                 console.error('Service Worker registration failed:', err);
+             });
+         });
+     }
+    </script>
   </body>
 </html>
