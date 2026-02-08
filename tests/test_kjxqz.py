@@ -1,8 +1,9 @@
-import json
 import inspect
+import json
+
+import pytest
 
 import kjxqz
-import pytest
 from kjxqz import __main__ as cli
 
 
