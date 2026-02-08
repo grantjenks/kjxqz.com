@@ -1,5 +1,0 @@
-include README.rst
-include LICENSE
-include kjxqz/*.txt
-include kjxqz/*.html
-include kjxqz/*.js

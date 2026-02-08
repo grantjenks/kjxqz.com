@@ -1,0 +1,113 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kjxqz"
+dynamic = ["version"]
+description = "Word list and anagram solver tools."
+readme = "README.rst"
+license = "Apache-2.0"
+authors = [{ name = "Grant Jenks", email = "contact@grantjenks.com" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+[project.optional-dependencies]
+dev = ["poethepoet", "pytest", "pytest-cov", "ruff", "sphinx"]
+
+[project.urls]
+Documentation = "https://www.grantjenks.com/docs/kjxqz/"
+Homepage = "https://www.kjxqz.com/"
+Repository = "https://github.com/grantjenks/kjxqz.com"
+Issues = "https://github.com/grantjenks/kjxqz.com/issues"
+
+[project.scripts]
+kjxqz = "kjxqz.__main__:main"
+
+[tool.setuptools]
+packages = ["kjxqz"]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = { attr = "kjxqz.__version__" }
+
+[tool.setuptools.package-data]
+kjxqz = ["*.txt", "*.js"]
+
+[tool.poe.tasks]
+
+[tool.poe.tasks.sync]
+cmd = "uv sync --extra dev"
+
+[tool.poe.tasks.fmt-isort]
+cmd = "ruff check --select I --fix kjxqz tests docs/conf.py"
+
+[tool.poe.tasks.fmt-sources]
+cmd = "ruff format kjxqz tests docs/conf.py"
+
+[tool.poe.tasks.fmt]
+sequence = ["fmt-isort", "fmt-sources"]
+
+[tool.poe.tasks.lint-sources]
+cmd = "ruff format --check kjxqz tests docs/conf.py"
+
+[tool.poe.tasks.lint-isort]
+cmd = "ruff check --select I kjxqz tests docs/conf.py"
+
+[tool.poe.tasks.lint-flake8]
+cmd = "ruff check kjxqz tests docs/conf.py"
+
+[tool.poe.tasks.lint]
+sequence = ["lint-sources", "lint-isort", "lint-flake8"]
+
+[tool.poe.tasks.test]
+cmd = "pytest"
+
+[tool.poe.tasks.docs]
+cmd = "env LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 python -m sphinx -b html docs docs/_build/html"
+
+[tool.poe.tasks.build-assets]
+cmd = "python -m kjxqz"
+
+[tool.poe.tasks.build-dist]
+cmd = "uv build"
+
+[tool.poe.tasks.check]
+sequence = ["lint", "test", "docs"]
+
+[tool.poe.tasks.deploy-origin]
+cmd = "git push origin main:main"
+
+[tool.poe.tasks.deploy-dokku]
+cmd = "git push dokku main:main"
+
+[tool.poe.tasks.deploy]
+sequence = ["deploy-origin", "deploy-dokku"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+extend-exclude = ["env311", "build", "dist"]
+exclude = [".tox", ".venv", "docs/_build"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E203"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.pytest.ini_options]
+addopts = ["--doctest-modules", "--doctest-glob=*.rst"]
+testpaths = ["docs", "kjxqz", "tests"]
