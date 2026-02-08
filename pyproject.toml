@@ -89,11 +89,14 @@ sequence = ["lint", "test", "docs"]
 [tool.poe.tasks.deploy-origin]
 cmd = "git push origin main:main"
 
+[tool.poe.tasks.deploy-tags]
+cmd = "git push origin --tags"
+
 [tool.poe.tasks.deploy-dokku]
 cmd = "git push dokku main:main"
 
 [tool.poe.tasks.deploy]
-sequence = ["deploy-origin", "deploy-dokku"]
+sequence = ["deploy-origin", "deploy-tags", "deploy-dokku"]
 
 [tool.ruff]
 target-version = "py310"
