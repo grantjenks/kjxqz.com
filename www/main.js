@@ -1,5 +1,19 @@
 function update() {
     var query_value = document.getElementById('query').value;
+    var has_query = query_value.trim().length > 0;
+    var word_list_help = document.getElementById('word-list-help');
+
+    if (word_list_help) {
+        word_list_help.style.display = has_query ? 'none' : '';
+    }
+
+    var output = document.getElementById('output');
+
+    if (!has_query) {
+        output.innerHTML = '';
+        return;
+    }
+
     gtag('event', 'view_search_results', {'search_term': query_value});
     var options = parse();
     var results = matches(options);

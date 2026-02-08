@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kjxqz-74b310bf59410d36';
+const CACHE_NAME = 'kjxqz-8d07ae190284c395';
 const assetsToCache = [
     '/',
     '/styles.css',
