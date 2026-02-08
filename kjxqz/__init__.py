@@ -152,7 +152,7 @@ def make_service_worker(
 
 
 __title__ = 'kjxqz'
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __build__ = 0x000001
 __author__ = 'Grant Jenks'
 __license__ = 'Apache 2.0'
