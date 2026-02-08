@@ -290,7 +290,6 @@ abnormally
 abnormals
 abnormities
 abnormity
-abo
 aboard
 abode
 aboded
@@ -15415,6 +15414,7 @@ biotype
 biotypes
 biotypic
 biovular
+biowaste
 bioweapon
 bioweapons
 bipack
@@ -48717,6 +48717,7 @@ ejectments
 ejector
 ejectors
 ejects
+ejido
 eke
 eked
 ekes
@@ -65868,7 +65869,6 @@ gownsman
 gownsmen
 gox
 goxes
-goy
 goyim
 goyish
 goys
@@ -72722,7 +72722,6 @@ horticulture
 horticultures
 horticulturist
 horticulturists
-hos
 hosanna
 hosannaed
 hosannah
@@ -81715,7 +81714,6 @@ jetway
 jetways
 jeu
 jeux
-jew
 jewed
 jewel
 jeweled
@@ -82549,6 +82547,7 @@ juveniles
 juvenilia
 juvenilities
 juvenility
+juvie
 juxtapose
 juxtaposed
 juxtaposes
@@ -101111,6 +101110,7 @@ nevus
 new
 newbie
 newbies
+newbs
 newborn
 newborns
 newcomer
@@ -149905,6 +149905,7 @@ stalks
 stalky
 stall
 stalled
+staller
 stallholder
 stallholders
 stalling
