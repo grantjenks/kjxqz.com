@@ -26,10 +26,22 @@ function. The `help` works on modules, classes and methods in `KJXQZ`_.
 
     >>> import kjxqz
     >>> help(kjxqz)
+    >>> kjxqz.load()
+    >>> results = kjxqz.search(letters='abcdef?', contains='hi')
+    >>> words = list(kjxqz.isearch(letters='abcdef?', contains='hi'))
 
-To build website assets from the packaged word list::
+Build website assets from the packaged word list::
 
     $ python -m kjxqz
+    $ python -m kjxqz build
+
+The build updates ``www/dawg.js``, ``kjxqz/dawg.js``, and
+``www/service-worker.js``.
+
+Search from the command line::
+
+    $ python -m kjxqz abcdef? hi
+    $ python -m kjxqz search abcdef? hi
 
 Development
 -----------

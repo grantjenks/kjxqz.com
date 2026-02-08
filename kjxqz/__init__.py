@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import Counter, defaultdict
+from collections.abc import Iterator
 from itertools import count
 from pathlib import Path
 from typing import Iterable
@@ -104,10 +105,15 @@ def build_dawg(words: Iterable[str]) -> dict[str, dict[str, str]]:
 PACKAGE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = PACKAGE_DIR.parent
 WORDS_TXT = PACKAGE_DIR / 'words.txt'
+DAWG_JS = PACKAGE_DIR / 'dawg.js'
+WEBSITE_DAWG_JS = PROJECT_DIR / 'www' / 'dawg.js'
 SERVICE_WORKER_JS = PACKAGE_DIR / 'service-worker.js'
 INDEX_HTML = PROJECT_DIR / 'www' / 'index.html'
 MAIN_JS = PROJECT_DIR / 'www' / 'main.js'
 STYLES_CSS = PROJECT_DIR / 'www' / 'styles.css'
+ALPHABET = tuple('abcdefghijklmnopqrstuvwxyz')
+
+_DAWG: dict[str, dict[str, str]] | None = None
 
 
 def load_words(words_filename: str | Path = WORDS_TXT) -> list[str]:
@@ -115,17 +121,113 @@ def load_words(words_filename: str | Path = WORDS_TXT) -> list[str]:
     return sorted(set(path.read_text(encoding='utf-8').splitlines()))
 
 
-def make_dawg(
-    filename: str | Path = 'www/dawg.js', words_filename: str | Path = WORDS_TXT
-):
-    words = load_words(words_filename=words_filename)
-    data = build_dawg(words)
-    path = Path(filename)
-    path.parent.mkdir(parents=True, exist_ok=True)
+def _to_dawg_js(data: dict[str, dict[str, str]]) -> str:
     text = 'var dawg = '
     text += json.dumps(data, indent=4, sort_keys=True)
     text += ';\n'
-    path.write_text(text, encoding='utf-8')
+    return text
+
+
+def _write_dawg(data: dict[str, dict[str, str]], filename: str | Path) -> None:
+    path = Path(filename)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(_to_dawg_js(data), encoding='utf-8')
+
+
+def load(filename: str | Path = DAWG_JS) -> dict[str, dict[str, str]]:
+    text = Path(filename).read_text(encoding='utf-8').strip()
+    if text.startswith('var dawg ='):
+        payload = text[len('var dawg =') :].strip()
+        if payload.endswith(';'):
+            payload = payload[:-1].strip()
+    else:
+        payload = text
+
+    data = json.loads(payload)
+
+    global _DAWG
+    _DAWG = data
+    return data
+
+
+def _get_dawg() -> dict[str, dict[str, str]]:
+    if _DAWG is None:
+        raise RuntimeError('DAWG is not loaded. Call kjxqz.load() first.')
+    return _DAWG
+
+
+def isearch(letters: str, contains: str = '') -> Iterator[str]:
+    letters = letters.lower()
+    contains = contains.lower()
+
+    dawg = _get_dawg()
+    value: list[str] = []
+    letters_list = list(letters)
+    contains_list = list(contains)
+    seen: set[str] = set()
+
+    def helper(state: str, contained: bool) -> Iterator[str]:
+        branches = dawg.get(state, {})
+
+        if contained:
+            if '$' in branches:
+                result = ''.join(value)
+                if result not in seen:
+                    seen.add(result)
+                    yield result
+            yield from traverse(state, True)
+            return
+
+        yield from traverse(state, False)
+
+        contains_length = len(contains_list)
+        for index in range(contains_length):
+            letter = contains_list[index]
+            if letter in branches:
+                value.append(letter)
+                state = branches[letter]
+                branches = dawg.get(state, {})
+            else:
+                for _ in range(index):
+                    value.pop()
+                return
+
+        yield from helper(state, True)
+
+        for _ in range(contains_length):
+            value.pop()
+
+    def traverse(state: str, contained: bool) -> Iterator[str]:
+        branches = dawg.get(state, {})
+        letters_length = len(letters_list)
+
+        for _ in range(letters_length):
+            letter = letters_list.pop(0)
+            choices = ALPHABET if letter == '?' else (letter,)
+
+            for choice in choices:
+                if choice in branches:
+                    value.append(choice)
+                    yield from helper(branches[choice], contained)
+                    value.pop()
+
+            letters_list.append(letter)
+
+    yield from helper('0', not contains_list)
+
+
+def search(letters: str, contains: str = '') -> list[str]:
+    results = list(isearch(letters, contains))
+    results.sort(key=lambda word: (-len(word), word))
+    return results
+
+
+def make_dawg(
+    filename: str | Path = WEBSITE_DAWG_JS, words_filename: str | Path = WORDS_TXT
+):
+    words = load_words(words_filename=words_filename)
+    data = build_dawg(words)
+    _write_dawg(data, filename=filename)
     return data
 
 
@@ -149,6 +251,25 @@ def make_service_worker(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding='utf-8')
     return code
+
+
+def build(
+    dawg: str | Path = WEBSITE_DAWG_JS,
+    package_dawg: str | Path = DAWG_JS,
+    service_worker: str | Path = 'www/service-worker.js',
+    words_filename: str | Path = WORDS_TXT,
+    template_filename: str | Path = SERVICE_WORKER_JS,
+    hash_filenames: Iterable[str | Path] | None = None,
+) -> tuple[dict[str, dict[str, str]], str]:
+    data = make_dawg(filename=dawg, words_filename=words_filename)
+    if Path(package_dawg) != Path(dawg):
+        _write_dawg(data, filename=package_dawg)
+    code = make_service_worker(
+        filename=service_worker,
+        template_filename=template_filename,
+        hash_filenames=hash_filenames,
+    )
+    return data, code
 
 
 __title__ = 'kjxqz'
