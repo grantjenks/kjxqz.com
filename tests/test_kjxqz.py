@@ -1,5 +1,6 @@
 import inspect
 import json
+import re
 
 import pytest
 
@@ -9,6 +10,15 @@ from kjxqz import __main__ as cli
 
 def test_build():
     assert kjxqz.__build__ > 0
+
+
+def test_packaged_words_txt_invariants():
+    words = kjxqz.WORDS_TXT.read_text(encoding='utf-8').splitlines()
+
+    assert words == sorted(words)
+    assert len(words) == len(set(words))
+    assert all(re.fullmatch(r'[a-z]+', word) for word in words)
+    assert all(2 <= len(word) <= 15 for word in words)
 
 
 def is_word_in_dawg(dawg, word):
