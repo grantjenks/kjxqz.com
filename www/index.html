@@ -16,13 +16,46 @@
         <input id="query" name="query" type="text" oninput="update()"
                autocorrect="off" autocapitalize="none"
                placeholder="letters contains" aria-describedby="query-help">
-        <p id="query-help" class="input-help">
-          Type letters (use <code>?</code> for blanks). Optional second word:
-          letters to include.
-        </p>
-        <p id="word-list-help" class="input-help">
-          Word list: <a href="/words.txt">words.txt</a>
-        </p>
+        <div id="query-help" class="input-help">
+          <p>
+            Type rack letters first; use <code>?</code> for blanks. Add a
+            second word to require a sequence: letters there are fixed,
+            <code>_</code> consumes rack letters, and <code>.</code> at either
+            edge anchors the pattern.
+          </p>
+          <ul>
+            <li>
+              <code class="example-query">abc</code> words from <code>a</code>,
+              <code>b</code>, or <code>c</code>
+            </li>
+            <li>
+              <code class="example-query">abc d</code> words containing
+              <code>d</code> with <code>a</code>, <code>b</code>, or
+              <code>c</code>
+            </li>
+            <li>
+              <code class="example-query">def?</code> words from <code>d</code>,
+              <code>e</code>, <code>f</code>, or any letter
+            </li>
+            <li>
+              <code class="example-query">hij a__</code> words like
+              <code>a</code> blank blank with <code>h</code>, <code>i</code>,
+              or <code>j</code>
+            </li>
+            <li>
+              <code class="example-query">stu e.</code> words ending with
+              <code>e</code>, plus <code>s</code>, <code>t</code>, or
+              <code>u</code>
+            </li>
+            <li>
+              <code class="example-query">abc .__.</code> exactly two-letter
+              words from <code>a</code>, <code>b</code>, or <code>c</code>
+            </li>
+          </ul>
+          <p class="word-list-help">
+            Word list: <a href="/words.txt">words.txt</a>
+          </p>
+        </div>
       </div>
       <div id="output"></div>
     </div>

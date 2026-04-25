@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kjxqz-14ce708ce9a99731';
+const CACHE_NAME = 'kjxqz-eedf4a303e556d2d';
 const assetsToCache = [
     '/',
     '/styles.css',
@@ -7,6 +7,7 @@ const assetsToCache = [
 ];
 
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(assetsToCache);
@@ -33,6 +34,8 @@ self.addEventListener('activate', (event) => {
                     }
                 })
             );
+        }).then(() => {
+            return self.clients.claim();
         })
     );
 });

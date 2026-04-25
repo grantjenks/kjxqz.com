@@ -124,6 +124,36 @@ def test_search_and_isearch(monkeypatch):
     assert len(results) == len(set(results))
 
 
+def test_search_supports_more_than_two_question_marks(monkeypatch):
+    words = ['aa', 'ab', 'abc', 'cab']
+    monkeypatch.setattr(kjxqz, '_DAWG', kjxqz.build_dawg(words))
+
+    assert kjxqz.search('???') == ['abc', 'cab', 'aa', 'ab']
+
+    results = list(kjxqz.isearch('???'))
+    assert set(results) == set(words)
+    assert len(results) == len(set(results))
+
+
+def test_search_contains_pattern_blanks_consume_letters(monkeypatch):
+    words = ['alarm', 'apart', 'array', 'altar', 'award']
+    monkeypatch.setattr(kjxqz, '_DAWG', kjxqz.build_dawg(words))
+
+    assert kjxqz.search('??', 'a_ar_') == ['alarm', 'apart', 'award']
+    assert kjxqz.search('lmx', 'a_ar_') == ['alarm']
+    assert kjxqz.search('l?', 'a_ar_') == ['alarm']
+    assert kjxqz.search('lx', 'a_ar_') == []
+
+
+def test_search_contains_period_anchors_pattern(monkeypatch):
+    words = ['aa', 'am', 'an', 'at', 'ate', 'bat', 'cat', 'ta']
+    monkeypatch.setattr(kjxqz, '_DAWG', kjxqz.build_dawg(words))
+
+    assert kjxqz.search('???', '.__.') == ['aa', 'am', 'an', 'at', 'ta']
+    assert kjxqz.search('??', '.a') == ['ate', 'aa', 'am', 'an', 'at']
+    assert kjxqz.search('??', 't.') == ['bat', 'cat', 'at']
+
+
 def test_search_requires_load(monkeypatch):
     monkeypatch.setattr(kjxqz, '_DAWG', None)
     with pytest.raises(RuntimeError):

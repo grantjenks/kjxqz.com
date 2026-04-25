@@ -111,7 +111,6 @@ SERVICE_WORKER_JS = PACKAGE_DIR / 'service-worker.js'
 INDEX_HTML = PROJECT_DIR / 'www' / 'index.html'
 MAIN_JS = PROJECT_DIR / 'www' / 'main.js'
 STYLES_CSS = PROJECT_DIR / 'www' / 'styles.css'
-ALPHABET = tuple('abcdefghijklmnopqrstuvwxyz')
 
 _DAWG: dict[str, dict[str, str]] | None = None
 
@@ -159,12 +158,42 @@ def _get_dawg() -> dict[str, dict[str, str]]:
 def isearch(letters: str, contains: str = '') -> Iterator[str]:
     letters = letters.lower()
     contains = contains.lower()
+    contains_starts = contains.startswith('.')
+    contains_ends = len(contains) > 1 and contains.endswith('.')
+    contains_pattern = contains
+
+    if contains_starts:
+        contains_pattern = contains_pattern[1:]
+
+    if contains_ends:
+        contains_pattern = contains_pattern[:-1]
+
+    if contains_pattern:
+        contains = contains_pattern
+    else:
+        contains_starts = False
+        contains_ends = False
 
     dawg = _get_dawg()
     value: list[str] = []
-    letters_list = list(letters)
+    letter_counts = Counter(letters)
+    blanks = letter_counts.pop('?', 0)
     contains_list = list(contains)
     seen: set[str] = set()
+
+    def consume(letter: str) -> Iterator[None]:
+        nonlocal blanks
+
+        count = letter_counts[letter]
+
+        if count > 0:
+            letter_counts[letter] = count - 1
+            yield
+            letter_counts[letter] = count
+        elif blanks > 0:
+            blanks -= 1
+            yield
+            blanks += 1
 
     def helper(state: str, contained: bool) -> Iterator[str]:
         branches = dawg.get(state, {})
@@ -175,43 +204,47 @@ def isearch(letters: str, contains: str = '') -> Iterator[str]:
                 if result not in seen:
                     seen.add(result)
                     yield result
-            yield from traverse(state, True)
+            if not contains_ends:
+                yield from traverse(state, True)
             return
 
-        yield from traverse(state, False)
-
-        contains_length = len(contains_list)
-        for index in range(contains_length):
-            letter = contains_list[index]
-            if letter in branches:
-                value.append(letter)
-                state = branches[letter]
-                branches = dawg.get(state, {})
-            else:
-                for _ in range(index):
-                    value.pop()
-                return
-
-        yield from helper(state, True)
-
-        for _ in range(contains_length):
-            value.pop()
+        if not contains_starts:
+            yield from traverse(state, False)
+        yield from match_contains(state, 0)
 
     def traverse(state: str, contained: bool) -> Iterator[str]:
         branches = dawg.get(state, {})
-        letters_length = len(letters_list)
 
-        for _ in range(letters_length):
-            letter = letters_list.pop(0)
-            choices = ALPHABET if letter == '?' else (letter,)
+        for letter, next_state in branches.items():
+            if letter == '$':
+                continue
 
-            for choice in choices:
-                if choice in branches:
+            for _ in consume(letter):
+                value.append(letter)
+                yield from helper(next_state, contained)
+                value.pop()
+
+    def match_contains(state: str, offset: int) -> Iterator[str]:
+        if offset == len(contains_list):
+            yield from helper(state, True)
+            return
+
+        branches = dawg.get(state, {})
+        letter = contains_list[offset]
+
+        if letter == '_':
+            for choice, next_state in branches.items():
+                if choice == '$':
+                    continue
+
+                for _ in consume(choice):
                     value.append(choice)
-                    yield from helper(branches[choice], contained)
+                    yield from match_contains(next_state, offset + 1)
                     value.pop()
-
-            letters_list.append(letter)
+        elif letter in branches:
+            value.append(letter)
+            yield from match_contains(branches[letter], offset + 1)
+            value.pop()
 
     yield from helper('0', not contains_list)
 
